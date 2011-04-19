@@ -35,6 +35,8 @@ from sample import ProtectedProperty, ProtectedEnumClass
 from sample import PrivateDtor
 from sample import Event, ObjectType, Point
 
+global initialCacheSize
+
 class ExtendedProtectedPolymorphic(ProtectedPolymorphic):
     def __init__(self, name):
         ProtectedPolymorphic.__init__(self, name)
@@ -70,7 +72,8 @@ class ProtectedNonPolymorphicTest(unittest.TestCase):
     '''Test cases for protected method in a class without virtual methods.'''
 
     def tearDown(self):
-        self.assertEqual(cacheSize(), 0)
+        global initialCacheSize
+        self.assertEqual(cacheSize(), initialCacheSize)
 
     def testProtectedCall(self):
         '''Calls a non-virtual protected method.'''
@@ -97,7 +100,8 @@ class ProtectedPolymorphicTest(unittest.TestCase):
     '''Test cases for protected method in a class with virtual methods.'''
 
     def tearDown(self):
-        self.assertEqual(cacheSize(), 0)
+        global initialCacheSize
+        self.assertEqual(cacheSize(), initialCacheSize)
 
     def testProtectedCall(self):
         '''Calls a virtual protected method.'''
@@ -144,7 +148,8 @@ class ProtectedPolymorphicGrandDaugherTest(unittest.TestCase):
     another with protected virtual methods.'''
 
     def tearDown(self):
-        self.assertEqual(cacheSize(), 0)
+        global initialCacheSize
+        self.assertEqual(cacheSize(), initialCacheSize)
 
     def testProtectedCallWithInstanceCreatedOnCpp(self):
         '''Calls a virtual protected method from parent class on an instance created in C++.'''
@@ -168,7 +173,8 @@ class ProtectedVirtualDtorTest(unittest.TestCase):
         ProtectedVirtualDestructor.resetDtorCounter()
 
     def tearDown(self):
-        self.assertEqual(cacheSize(), 0)
+        global initialCacheSize
+        self.assertEqual(cacheSize(), initialCacheSize)
 
     def testVirtualProtectedDtor(self):
         '''Original protected virtual destructor is being called.'''
@@ -211,7 +217,8 @@ class ProtectedEnumTest(unittest.TestCase):
     '''Test cases for protected enum.'''
 
     def tearDown(self):
-        self.assertEqual(cacheSize(), 0)
+        global initialCacheSize
+        self.assertEqual(cacheSize(), initialCacheSize)
 
     def testProtectedMethodWithProtectedEnumArgument(self):
         '''Calls protected method with protected enum argument.'''
@@ -269,8 +276,9 @@ class ProtectedPropertyTest(unittest.TestCase):
         self.obj = ProtectedProperty()
 
     def tearDown(self):
+        global initialCacheSize
         del self.obj
-        self.assertEqual(cacheSize(), 0)
+        self.assertEqual(cacheSize(), initialCacheSize)
 
     def testProtectedProperty(self):
         '''Writes and reads a protected integer property.'''
@@ -318,7 +326,8 @@ class PrivateDtorProtectedMethodTest(unittest.TestCase):
     '''Test cases for classes with private destructors and protected methods.'''
 
     def tearDown(self):
-        self.assertEqual(cacheSize(), 0)
+        global initialCacheSize
+        self.assertEqual(cacheSize(), initialCacheSize)
 
     def testProtectedMethod(self):
         '''Calls protected method of a class with a private destructor.'''
@@ -332,5 +341,7 @@ class PrivateDtorProtectedMethodTest(unittest.TestCase):
         self.assertEqual(obj.instanceCalls(), obj.protectedInstanceCalls())
 
 if __name__ == '__main__':
+    global initialCacheSize
+    initialCacheSize = cacheSize()
     unittest.main()
 
