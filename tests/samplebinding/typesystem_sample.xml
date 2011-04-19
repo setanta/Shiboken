@@ -4,6 +4,7 @@
     <suppress-warning text="Duplicate type entry: 'SampleNamespace'" />
 
     <primitive-type name="bool"/>
+    <primitive-type name="float"/>
     <primitive-type name="double"/>
     <primitive-type name="real"/>
     <primitive-type name="int"/>
@@ -62,6 +63,15 @@
     <namespace-type name="sample">
         <value-type name="sample" />
     </namespace-type>
+
+    <add-field name="addedField_int" type="int">4321</add-field>
+    <add-field name="addedField_float" type="double">21.0</add-field>
+    <add-field name="addedField_stringLiteral" type="const char*">"foobar"</add-field>
+    <inject-code class="native" position="beginning">
+    static const char* stringFunction() { return "field from string function"; }
+    </inject-code>
+    <add-field name="addedField_stringFunction" type="const char*">stringFunction()</add-field>
+    <add-field name="addedField_object" type="Point">Point(1, 2)</add-field>
 
     <function signature="sumComplexPair(std::pair&lt;Complex, Complex>)" />
     <function signature="gimmeComplexList()" />
@@ -1721,6 +1731,7 @@
                 %PYARG_0 = Shiboken::String::fromCString(%1);
             </inject-code>
         </add-function>
+
         <add-function signature="operator>(int)">
             <inject-code>
                 // This should test if code injections works inside rich comparison operators
@@ -1728,6 +1739,16 @@
                 %PYARG_0 = Py_True;
             </inject-code>
         </add-function>
+
+        <inject-code class="native" position="beginning">
+        static const char* stringFunction() { return "field from string function"; }
+        </inject-code>
+
+        <add-field name="addedField_int" type="int">4321</add-field>
+        <add-field name="addedField_float" type="float">21.0</add-field>
+        <add-field name="addedField_stringLiteral" type="const char*">"foobar"</add-field>
+        <add-field name="addedField_stringFunction" type="const char*">stringFunction()</add-field>
+        <add-field name="addedField_object" type="Str">Str("Str-foobar")</add-field>
     </value-type>
 
     <value-type name="Color" />

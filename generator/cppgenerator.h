@@ -176,6 +176,7 @@ private:
 
     void writeEnumsInitialization(QTextStream& s, AbstractMetaEnumList& enums);
     void writeEnumInitialization(QTextStream& s, const AbstractMetaEnum* metaEnum);
+    void writeFieldInitialization(QTextStream& s, const AbstractMetaField* metaField);
 
     void writeSignalInitialization(QTextStream& s, const AbstractMetaClass* metaClass);
 

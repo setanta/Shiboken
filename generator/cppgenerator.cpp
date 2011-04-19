@@ -3244,6 +3244,20 @@ void CppGenerator::writeEnumInitialization(QTextStream& s, const AbstractMetaEnu
     s << INDENT << "// End of '" << cppEnum->name() << "' enum." << endl << endl;
 }
 
+void CppGenerator::writeFieldInitialization(QTextStream& s, const AbstractMetaField* metaField)
+{
+    s << INDENT;
+    if (metaField->type()->name() == "int") {
+        s << "PyModule_AddIntConstant(module, \"" << metaField->name() << "\", " << metaField->defaultValueExpression();
+    } else if (isCString(metaField->type())) {
+        s << "PyModule_AddStringConstant(module, \"" << metaField->name() << "\", " << metaField->defaultValueExpression();
+    } else {
+        s << "PyModule_AddObject(module, \"" << metaField->name() << "\", ";
+        writeToPythonConversion(s, metaField->type(), metaField->enclosingClass(), metaField->defaultValueExpression());
+    }
+    s << ");" << endl;
+}
+
 void CppGenerator::writeSignalInitialization(QTextStream& s, const AbstractMetaClass* metaClass)
 {
     // Try to check something and print some warnings
@@ -3593,7 +3607,12 @@ void CppGenerator::writeClassRegister(QTextStream& s, const AbstractMetaClass* m
             continue;
         s << INDENT << "PyDict_SetItemString(" + cpythonTypeName(metaClass) + ".super.ht_type.tp_dict, \"";
         s << field->name() << "\", ";
-        writeToPythonConversion(s, field->type(), metaClass, metaClass->qualifiedCppName() + "::" + field->name());
+        QString value;
+        if (field->isUserAdded())
+            value = field->defaultValueExpression();
+        else
+            value = QString("%1::%2").arg(metaClass->qualifiedCppName()).arg(field->name());
+        writeToPythonConversion(s, field->type(), metaClass, value);
         s << ");" << endl;
     }
     s << endl;
@@ -4044,6 +4063,14 @@ void CppGenerator::finishGeneration()
     s << endl;
 
     writeEnumsInitialization(s, globalEnums);
+
+    AbstractMetaFieldList gFields = globalFields();
+    if (!gFields.isEmpty()) {
+        s << INDENT << "// Global user added fields." << endl;
+        foreach (const AbstractMetaField* field, gFields)
+            writeFieldInitialization(s, field);
+        s << endl;
+    }
 
     // Register primitive types on TypeResolver
     s << INDENT << "// Register primitive types on TypeResolver" << endl;
