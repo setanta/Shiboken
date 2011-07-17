@@ -25,6 +25,7 @@ set(libshiboken_SRC
 basewrapper.cpp
 gilstate.cpp
 helper.cpp
+sbkconverter.cpp
 sbkenum.cpp
 sbkmodule.cpp
 bindingmanager.cpp
@@ -50,6 +51,7 @@ install(FILES
         conversions.h
         gilstate.h
         helper.h
+        sbkconverter.h
         sbkenum.h
         sbkmodule.h
         python25compat.h

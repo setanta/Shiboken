@@ -488,6 +488,10 @@ QString ShibokenGenerator::cpythonWrapperCPtr(const TypeEntry* type, QString arg
 {
     if (ShibokenGenerator::isWrapperType(type))
         return baseConversionString( "::" + type->qualifiedCppName() + '*') + "toCpp(" + argName + ')';
+        //return QString("(::%1*)Shiboken::Conversions::getCppPointer(%2, %3)")
+                //.arg(type->qualifiedCppName())
+                //.arg(cpythonTypeNameExt(type))
+                //.arg(argName);
     return QString();
 }
 
@@ -550,6 +554,32 @@ void ShibokenGenerator::writeToPythonConversion(QTextStream& s, const AbstractMe
 {
     if (!type)
         return;
+
+    if (argumentName.isEmpty()) {
+        s << "/*EMPTY*/";
+    // TODO-CONVERTER: temporary.
+    } else if (isCString(type)) {
+        s << "Shiboken::Conversions::Primitive<const char*>::toPython(" << argumentName << ')';
+        return;
+    } else if (type->typeEntry()->isVoid()) {
+        s << "Shiboken::Conversions::Primitive<void*>::toPython(" << argumentName << ')';
+        return;
+    } else if (type->typeEntry()->isCppPrimitive()) {
+        s << "Shiboken::Conversions::Primitive<" << type->typeEntry()->qualifiedCppName() << ">::toPython(&" << argumentName << ')';
+        return;
+    } else if (isWrapperType(type)) {
+        QString toPythonFunc;
+        if (type->isReference())
+            toPythonFunc = "referenceToPython";
+        else if (ShibokenGenerator::isPointerToWrapperType(type))
+            toPythonFunc = "pointerToPython";
+        else
+            toPythonFunc = "copyToPython";
+        s << "Shiboken::Conversions::" << toPythonFunc << "((SbkObjectType*)";
+        s << cpythonTypeNameExt(type->typeEntry()) << ", " << (type->isValue() || type->isReference() ? "&" : "");
+        s << argumentName << ')';
+        return;
+    }
 
     // exclude const on Objects
     Options flags = getConverterOptions(type);
@@ -815,7 +845,7 @@ bool ShibokenGenerator::isWrapperType(const AbstractMetaType* metaType)
 
 bool ShibokenGenerator::isPointerToWrapperType(const AbstractMetaType* type)
 {
-    return isObjectType(type) || type->isValuePointer();
+    return type && (isObjectType(type) || type->isValuePointer());
 }
 
 bool ShibokenGenerator::shouldDereferenceArgumentPointer(const AbstractMetaArgument* arg)
@@ -825,7 +855,7 @@ bool ShibokenGenerator::shouldDereferenceArgumentPointer(const AbstractMetaArgum
 
 bool ShibokenGenerator::shouldDereferenceAbstractMetaTypePointer(const AbstractMetaType* metaType)
 {
-    return isWrapperType(metaType) && !isPointer(metaType)
+    return metaType && isWrapperType(metaType) && !isPointer(metaType)
             && (metaType->isValue() || metaType->isReference());
 }
 
@@ -1257,9 +1287,10 @@ void ShibokenGenerator::writeCodeSnips(QTextStream& s,
                     cppSelf = "cppSelf";
                 }
 
+                // TODO-CONVERTER: not any longer.
                 // on comparison operator cppSelf is always a reference.
-                if (func->isComparisonOperator())
-                    replacement = "%1.";
+                //if (func->isComparisonOperator())
+                    //replacement = "%1.";
 
                 if (func->isVirtual() && !func->isAbstract() && (!avoidProtectedHack() || !func->isProtected())) {
                     QString methodCallArgs = getArgumentsFromMethodCall(code);
@@ -1346,6 +1377,8 @@ void ShibokenGenerator::writeCodeSnips(QTextStream& s,
                         argName = arg->defaultValueExpression();
                     } else {
                         argName = QString(CPP_ARG"%1").arg(arg->argumentIndex() - removed);
+                        if (arg->type()->isReference() && isWrapperType(arg->type()))
+                            argName.prepend('*');
                     }
                     argumentNames << argName;
                 } else {
@@ -1655,6 +1688,21 @@ AbstractMetaType* ShibokenGenerator::buildAbstractMetaTypeFromString(QString typ
             metaType->setTypeUsagePattern(AbstractMetaType::NativePointerPattern);
     }
     return metaType;
+}
+
+AbstractMetaType* ShibokenGenerator::buildAbstractMetaTypeFromTypeEntry(const TypeEntry* typeEntry)
+{
+    AbstractMetaType* metaType = new AbstractMetaType;
+    metaType->setTypeEntry(typeEntry);
+    metaType->setIndirections(0);
+    metaType->setReference(false);
+    metaType->setConstant(false);
+    metaType->setTypeUsagePattern(AbstractMetaType::ValuePattern);
+    return metaType;
+}
+AbstractMetaType* ShibokenGenerator::buildAbstractMetaTypeFromAbstractMetaClass(const AbstractMetaClass* metaClass)
+{
+    return ShibokenGenerator::buildAbstractMetaTypeFromTypeEntry(metaClass->typeEntry());
 }
 
 /*

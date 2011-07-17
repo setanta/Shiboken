@@ -355,6 +355,11 @@ public:
      */
     AbstractMetaType* buildAbstractMetaTypeFromString(QString typeString);
 
+    /// Creates an AbstractMetaType object from a TypeEntry.
+    static AbstractMetaType* buildAbstractMetaTypeFromTypeEntry(const TypeEntry* typeEntry);
+    /// Creates an AbstractMetaType object from an AbstractMetaClass.
+    static AbstractMetaType* buildAbstractMetaTypeFromAbstractMetaClass(const AbstractMetaClass* metaClass);
+
     /**
      *  Helper function to return the flags to be used by a meta type when
      * it needs to write some converter code.

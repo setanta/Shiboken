@@ -48,13 +48,16 @@ private:
     void writeMetaObjectMethod(QTextStream& s, const AbstractMetaClass* metaClass);
     void writeMetaCast(QTextStream& s, const AbstractMetaClass* metaClass);
 
+    void writeConverterFunctions(QTextStream& s, const AbstractMetaClass* metaClass);
+    void writeConverterRegister(QTextStream& s, const AbstractMetaClass* metaClass);
+
+    void writeInitOverloadDecisorVariables(QTextStream& s, const OverloadData& overloadData);
     void writeConstructorWrapper(QTextStream &s, const AbstractMetaFunctionList overloads);
     void writeDestructorWrapper(QTextStream& s, const AbstractMetaClass* metaClass);
-    void writeMinimalConstructorCallArguments(QTextStream& s, const AbstractMetaClass* metaClass);
-    void writeMinimalConstructorCallArguments(QTextStream& s, const AbstractMetaType* type);
     void writeMethodWrapper(QTextStream &s, const AbstractMetaFunctionList overloads);
     void writeArgumentsInitializer(QTextStream& s, OverloadData& overloadData);
-    void writeCppSelfDefinition(QTextStream& s, const AbstractMetaFunction* func);
+    void writeCppSelfDefinition(QTextStream& s, const AbstractMetaFunction* func, bool hasStaticOverload = false);
+    void writeCppSelfDefinition(QTextStream& s, const AbstractMetaClass* metaClass, bool hasStaticOverload = false);
 
     void writeErrorSection(QTextStream& s, OverloadData& overloadData);
     /**
@@ -63,7 +66,7 @@ private:
      *   \param argName Python argument name
      *   \param type the TypeEntry passed when the validity check must confirm the type of the Python wrapper to be checked
      */
-    void writeInvalidCppObjectCheck(QTextStream& s, QString pyArgName = "self", const TypeEntry* type = 0);
+    void writeInvalidCppObjectCheck(QTextStream& s, const QString& pyArgName);
     void writeTypeCheck(QTextStream& s, const AbstractMetaType* argType, QString argumentName, bool isNumber = false, QString customType = "");
     void writeTypeCheck(QTextStream& s, const OverloadData* overloadData, QString argumentName);
 
@@ -85,15 +88,15 @@ private:
      */
     void writeArgumentConversion(QTextStream& s, const AbstractMetaType* argType,
                                  const QString& argName, const QString& pyArgName,
-                                 const AbstractMetaClass* context = 0,
+                                 const AbstractMetaClass* context = 0, int argPos = -1,
                                  const QString& defaultValue = QString());
     /// Convenience method to call writeArgumentConversion with an AbstractMetaArgument instead of an AbstractMetaType.
     void writeArgumentConversion(QTextStream& s, const AbstractMetaArgument* arg,
                                  const QString& argName, const QString& pyArgName,
-                                 const AbstractMetaClass* context = 0,
+                                 const AbstractMetaClass* context = 0, int argPos = -1,
                                  const QString& defaultValue = QString())
     {
-        writeArgumentConversion(s, arg->type(), argName, pyArgName, context, defaultValue);
+        writeArgumentConversion(s, arg->type(), argName, pyArgName, context, argPos, defaultValue);
     }
 
     /**
@@ -122,6 +125,29 @@ private:
 
     /// Writes the call to a single function usually from a collection of overloads.
     void writeSingleFunctionCall(QTextStream& s, const OverloadData& overloadData, const AbstractMetaFunction* func = 0);
+
+    /// TODO-CONVERTER: WRITEDOCSTRING for the methods below.
+    static QString pythonToCppFunctionName(const AbstractMetaType* sourceType, const AbstractMetaType* targetType);
+    static QString pythonToCppFunctionName(const TypeEntry* sourceType, const AbstractMetaType* targetType);
+    static QString pythonToCppFunctionName(const QString& sourceTypeName, const AbstractMetaType* targetType);
+    static QString pythonToCppFunctionName(const CustomConversion::TargetToNativeConversion* toNative,
+                                           const AbstractMetaType* targetType);
+    /// TODO-CONVERTER: WRITEDOCSTRING for the methods below.
+    static QString convertibleToCppFunctionName(const AbstractMetaType* sourceType, const AbstractMetaType* targetType);
+    static QString convertibleToCppFunctionName(const TypeEntry* sourceType, const AbstractMetaType* targetType);
+    static QString convertibleToCppFunctionName(const QString& sourceTypeName, const AbstractMetaType* targetType);
+    static QString convertibleToCppFunctionName(const CustomConversion::TargetToNativeConversion* toNative,
+                                                const AbstractMetaType* targetType);
+
+    void writePythonToCppConversionFunction(QTextStream& s,
+                                            const AbstractMetaType* sourceType,
+                                            const AbstractMetaType* targetType,
+                                            QString typeCheck = QString(),
+                                            QString conversion = QString());
+    void writePythonToCppConversionFunction(QTextStream& s,
+                                            const CustomConversion::TargetToNativeConversion* toNative,
+                                            const AbstractMetaType* targetType);
+
     void writeNamedArgumentResolution(QTextStream& s, const AbstractMetaFunction* func, bool usePyArgs);
 
     /// Returns a string containing the name of an argument for the given function and argument index.
@@ -172,8 +198,6 @@ private:
     /// Writes the implementation of special cast functions, used when we need to cast a class with mulltiple inheritance.
     void writeSpecialCastFunction(QTextStream& s, const AbstractMetaClass* metaClass);
 
-    void writeExtendedIsConvertibleFunction(QTextStream& s, const TypeEntry* externalType, const QList<const AbstractMetaClass*>& conversions);
-    void writeExtendedToCppFunction(QTextStream& s, const TypeEntry* externalType, const QList<const AbstractMetaClass*>& conversions);
     void writeExtendedConverterInitialization(QTextStream& s, const TypeEntry* externalType, const QList<const AbstractMetaClass*>& conversions);
 
     void writeParentChildManagement(QTextStream& s, const AbstractMetaFunction* func, bool userHeuristicForReturn);
@@ -203,6 +227,12 @@ private:
 
     /// Returns true if generator should produce getters and setters for the given class.
     bool shouldGenerateGetSetList(const AbstractMetaClass* metaClass);
+
+    /**
+     *  Returns true if the current argument must be checked with its specific
+     *  numeric type, instead of a generic number check.
+     */
+    static bool shouldPerformExactNumberTypeCheck(const OverloadData* overloadData);
 
     void writeHashFunction(QTextStream& s, const AbstractMetaClass* metaClass);
 
