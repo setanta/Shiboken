@@ -21,6 +21,7 @@
  */
 
 #include "sbkenum.h"
+#include "basewrapper.h"
 #include <string.h>
 #include <cstring>
 #include <list>
@@ -173,6 +174,67 @@ PyObject* getEnumItemFromValue(PyTypeObject* enumType, long itemValue)
         }
     }
     return 0;
+}
+
+static PyTypeObject* createEnum(const char* fullName, const char* cppName)
+{
+    PyTypeObject* enumType = newTypeWithName(fullName, cppName);
+    if (PyType_Ready(enumType) < 0)
+        return 0;
+    return enumType;
+}
+
+PyTypeObject* createGlobalEnum(PyObject* module, const char* name, const char* fullName, const char* cppName)
+{
+    PyTypeObject* enumType = createEnum(fullName, cppName);
+    if (enumType) {
+        if (PyModule_AddObject(module, name, (PyObject*)enumType) < 0)
+            return 0;
+    }
+    return enumType;
+}
+
+PyTypeObject* createScopedEnum(SbkObjectType* scope, const char* name, const char* fullName, const char* cppName)
+{
+    PyTypeObject* enumType = createEnum(fullName, cppName);
+    if (enumType) {
+        if (PyDict_SetItemString(scope->super.ht_type.tp_dict, name, (PyObject*)enumType) < 0)
+            return 0;
+    }
+    return enumType;
+}
+
+static PyObject* createEnumItem(PyTypeObject* enumType, const char* itemName, long itemValue)
+{
+    PyObject* enumItem = newItem(enumType, itemValue, itemName);
+    if (PyDict_SetItemString(enumType->tp_dict, itemName, enumItem) < 0)
+        return 0;
+    Py_DECREF(enumItem);
+    return enumItem;
+}
+
+bool createGlobalEnumItem(PyTypeObject* enumType, PyObject* module, const char* itemName, long itemValue)
+{
+    PyObject* enumItem = createEnumItem(enumType, itemName, itemValue);
+    if (enumItem) {
+        if (PyModule_AddObject(module, itemName, enumItem) < 0)
+            return false;
+        Py_DECREF(enumItem);
+        return true;
+    }
+    return false;
+}
+
+bool createScopedEnumItem(PyTypeObject* enumType, SbkObjectType* scope, const char* itemName, long itemValue)
+{
+    PyObject* enumItem = createEnumItem(enumType, itemName, itemValue);
+    if (enumItem) {
+        if (PyDict_SetItemString(scope->super.ht_type.tp_dict, itemName, enumItem) < 0)
+            return false;
+        Py_DECREF(enumItem);
+        return true;
+    }
+    return false;
 }
 
 PyObject* newItem(PyTypeObject* enumType, long itemValue, const char* itemName)
