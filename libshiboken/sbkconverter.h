@@ -94,6 +94,9 @@ LIBSHIBOKEN_API SbkConverter* createConverter(SbkObjectType* type,
                                               CppToPythonFunc pointerToPythonFunc,
                                               CppToPythonFunc copyToPythonFunc = 0);
 
+/// TODO-CONVERTER: WRITEDOCSTRING
+LIBSHIBOKEN_API SbkConverter* createConverter(CppToPythonFunc valueToPythonFunc);
+
 LIBSHIBOKEN_API void deleteConverter(SbkConverter* converter);
 
 // TODO:WRITEDOCSTRING
@@ -109,11 +112,14 @@ LIBSHIBOKEN_API void addPythonToCppValueConversion(SbkObjectType* type,
 // TODO:WRITEDOCSTRING - used only for Object Types and Value Type pointers
 LIBSHIBOKEN_API PyObject* pointerToPython(SbkObjectType* type, const void* cppIn);
 
-// TODO:WRITEDOCSTRING - used only for Value Types (and Primitives and Containers) - cppIn must point to a value
+// TODO:WRITEDOCSTRING - used only for Value Types - cppIn must point to a value
 LIBSHIBOKEN_API PyObject* copyToPython(SbkObjectType* type, const void* cppIn);
 
-// TODO:WRITEDOCSTRING - used only for Value Types (and Primitives and Containers) - cppIn must point to a value
+// TODO:WRITEDOCSTRING - used only for Value Types - cppIn must point to a value
 LIBSHIBOKEN_API PyObject* referenceToPython(SbkObjectType* type, const void* cppIn);
+
+// TODO:WRITEDOCSTRING - used only for Primitives and Containers (and Value Types) - cppIn must point to a primitive, container or value type
+LIBSHIBOKEN_API PyObject* toPython(SbkConverter* converter, const void* cppIn);
 
 // Python -> C++ ---------------------------------------------------------------------------
 
@@ -125,6 +131,10 @@ LIBSHIBOKEN_API PythonToCppFunc isPythonToCppValueConvertible(SbkObjectType* typ
 
 // TODO:WRITEDOCSTRING- Returns a Python to C++ conversion function if true, or NULL if false.
 LIBSHIBOKEN_API PythonToCppFunc isPythonToCppReferenceConvertible(SbkObjectType* type, PyObject* pyIn);
+
+// TODO:WRITEDOCSTRING- Returns a Python to C++ conversion function if true, or NULL if false.
+LIBSHIBOKEN_API PythonToCppFunc isPythonToCppConvertible(SbkConverter* converter, PyObject* pyIn);
+
 
 // TODO:WRITEDOCSTRING - function used by the generated [TYPE]_PythonToCpp_[TYPE]_PTR
 LIBSHIBOKEN_API void pythonToCppPointer(SbkObjectType* type, PyObject* pyIn, void* cppOut);

@@ -26,6 +26,11 @@
 #include <Python.h>
 #include "shibokenmacros.h"
 
+extern "C"
+{
+struct SbkConverter;
+}
+
 namespace Shiboken {
 namespace Module {
 
@@ -57,6 +62,20 @@ LIBSHIBOKEN_API void registerTypes(PyObject* module, PyTypeObject** types);
  *  \returns        A pointer to the PyTypeObject* array of types.
  */
 LIBSHIBOKEN_API PyTypeObject** getTypes(PyObject* module);
+
+/**
+ *  Registers the list of converters created by \p module for non-wrapper types.
+ *  \param module       Module where the converters were created.
+ *  \param converters   Array of SbkConverter* objects representing the converters created on \p module.
+ */
+LIBSHIBOKEN_API void registerConverters(PyObject* module, SbkConverter** converters);
+
+/**
+ *  Retrieves the array of converters.
+ *  \param module   Module where the converters were created.
+ *  \returns        A pointer to the SbkConverter* array of converters.
+ */
+LIBSHIBOKEN_API SbkConverter** getConverters(PyObject* module);
 
 } } // namespace Shiboken::Module
 

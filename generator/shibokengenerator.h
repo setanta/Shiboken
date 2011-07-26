@@ -245,6 +245,10 @@ public:
 
     static QString cpythonOperatorFunctionName(const AbstractMetaFunction* func);
 
+    static QString fixedCppTypeName(const CustomConversion::TargetToNativeConversion* toNative);
+    static QString fixedCppTypeName(const AbstractMetaType* type);
+    static QString fixedCppTypeName(const TypeEntry* type, QString typeName = QString());
+
     static bool isNumber(QString cpythonApiName);
     static bool isNumber(const TypeEntry* type);
     static bool isNumber(const AbstractMetaType* type);
@@ -273,6 +277,9 @@ public:
     static bool shouldDereferenceAbstractMetaTypePointer(const AbstractMetaType* metaType);
 
     static bool visibilityModifiedToPrivate(const AbstractMetaFunction* func);
+
+    QString converterObject(const AbstractMetaType* type);
+    QString converterObject(const TypeEntry* type);
 
     QString cpythonBaseName(const AbstractMetaClass* metaClass);
     QString cpythonBaseName(const TypeEntry* type);
@@ -343,6 +350,7 @@ public:
     /// Returns true if the generated code should use the "#define protected public" hack.
     bool avoidProtectedHack() const;
     QString cppApiVariableName(const QString& moduleName = QString()) const;
+    QString convertersVariableName(const QString& moduleName = QString()) const;
     QString getTypeIndexVariableName(const TypeEntry* metaType);
     /// Returns true if the user don't want verbose error messages on the generated bindings.
     bool verboseErrorMessagesDisabled() const;

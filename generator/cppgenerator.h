@@ -99,6 +99,15 @@ private:
         writeArgumentConversion(s, arg->type(), argName, pyArgName, context, argPos, defaultValue);
     }
 
+    /// TODO-CONVERTER: WRITEDOCSTRING
+    void writePythonToCppTypeConversion(QTextStream& s,
+                                        const AbstractMetaType* type,
+                                        const QString& pythonToCppFunc,
+                                        const QString& pyIn,
+                                        const QString& cppOut,
+                                        const AbstractMetaClass* context = 0,
+                                        const QString& defaultValue = QString());
+
     /**
      *   Set the Python method wrapper return value variable to Py_None if
      *   there are return types different from void in any of the other overloads
@@ -126,27 +135,43 @@ private:
     /// Writes the call to a single function usually from a collection of overloads.
     void writeSingleFunctionCall(QTextStream& s, const OverloadData& overloadData, const AbstractMetaFunction* func = 0);
 
-    /// TODO-CONVERTER: WRITEDOCSTRING for the methods below.
-    static QString pythonToCppFunctionName(const AbstractMetaType* sourceType, const AbstractMetaType* targetType);
-    static QString pythonToCppFunctionName(const TypeEntry* sourceType, const AbstractMetaType* targetType);
-    static QString pythonToCppFunctionName(const QString& sourceTypeName, const AbstractMetaType* targetType);
-    static QString pythonToCppFunctionName(const CustomConversion::TargetToNativeConversion* toNative,
-                                           const AbstractMetaType* targetType);
-    /// TODO-CONVERTER: WRITEDOCSTRING for the methods below.
-    static QString convertibleToCppFunctionName(const AbstractMetaType* sourceType, const AbstractMetaType* targetType);
-    static QString convertibleToCppFunctionName(const TypeEntry* sourceType, const AbstractMetaType* targetType);
-    static QString convertibleToCppFunctionName(const QString& sourceTypeName, const AbstractMetaType* targetType);
-    static QString convertibleToCppFunctionName(const CustomConversion::TargetToNativeConversion* toNative,
-                                                const AbstractMetaType* targetType);
+    /// TODO-CONVERTER: WRITEDOCSTRING
+    static QString cppToPythonFunctionName(const QString& sourceTypeName, QString targetTypeName = QString());
 
-    void writePythonToCppConversionFunction(QTextStream& s,
-                                            const AbstractMetaType* sourceType,
-                                            const AbstractMetaType* targetType,
-                                            QString typeCheck = QString(),
-                                            QString conversion = QString());
-    void writePythonToCppConversionFunction(QTextStream& s,
-                                            const CustomConversion::TargetToNativeConversion* toNative,
-                                            const AbstractMetaType* targetType);
+    /// TODO-CONVERTER: WRITEDOCSTRING for the methods below.
+    static QString pythonToCppFunctionName(const QString& sourceTypeName, const QString& targetTypeName);
+    static QString pythonToCppFunctionName(const AbstractMetaType* sourceType, const AbstractMetaType* targetType);
+    static QString pythonToCppFunctionName(const CustomConversion::TargetToNativeConversion* toNative, const TypeEntry* targetType);
+
+    /// TODO-CONVERTER: WRITEDOCSTRING for the methods below.
+    static QString convertibleToCppFunctionName(const QString& sourceTypeName, const QString& targetTypeName);
+    static QString convertibleToCppFunctionName(const AbstractMetaType* sourceType, const AbstractMetaType* targetType);
+    static QString convertibleToCppFunctionName(const CustomConversion::TargetToNativeConversion* toNative, const TypeEntry* targetType);
+
+    /// TODO-CONVERTER: WRITEDOCSTRING
+    void writeCppToPythonFunction(QTextStream& s, const QString& code, const QString& sourceTypeName, QString targetTypeName = QString());
+    void writeCppToPythonFunction(QTextStream& s, const CustomConversion* customConversion);
+
+    /// TODO-CONVERTER: WRITEDOCSTRING
+    void writePythonToCppFunction(QTextStream& s, const QString& code, const QString& sourceTypeName, const QString& targetTypeName);
+
+    /// TODO-CONVERTER: WRITEDOCSTRING
+    void writeIsPythonConvertibleToCppFunction(QTextStream& s,
+                                               const QString& sourceTypeName,
+                                               const QString& targetTypeName,
+                                               const QString& condition,
+                                               QString pythonToCppFuncName = QString(),
+                                               bool acceptNoneAsCppNull = false);
+
+    /// TODO-CONVERTER: WRITEDOCSTRING for the methods below.
+    void writePythonToCppConversionFunctions(QTextStream& s,
+                                             const AbstractMetaType* sourceType,
+                                             const AbstractMetaType* targetType,
+                                             QString typeCheck = QString(),
+                                             QString conversion = QString());
+    void writePythonToCppConversionFunctions(QTextStream& s,
+                                             const CustomConversion::TargetToNativeConversion* toNative,
+                                             const TypeEntry* targetType);
 
     void writeNamedArgumentResolution(QTextStream& s, const AbstractMetaFunction* func, bool usePyArgs);
 

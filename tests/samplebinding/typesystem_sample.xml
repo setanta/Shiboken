@@ -1531,7 +1531,7 @@
                 int day = PyDateTime_GET_DAY(%in);
                 int month = PyDateTime_GET_MONTH(%in);
                 int year = PyDateTime_GET_YEAR(%in);
-                %out = %OUT_TYPE(day, month, year);
+                %out = %OUTTYPE(day, month, year);
                 </add-conversion>
             </target-to-native>
         </conversion-rule>

@@ -72,6 +72,11 @@ SbkConverter* createConverter(SbkObjectType* type,
     return converter;
 }
 
+SbkConverter* createConverter(CppToPythonFunc toPythonFunc)
+{
+    return createConverterObject(0, 0, 0, 0, toPythonFunc);
+}
+
 void deleteConverter(SbkConverter* converter)
 {
     if (converter) {
@@ -100,10 +105,18 @@ PyObject* pointerToPython(SbkObjectType* type, const void* cppIn)
     return type->d->converter->pointerToPython(cppIn);
 }
 
-PyObject* copyToPython(SbkObjectType* type, const void* cppIn)
+static inline PyObject* CopyCppToPython(SbkConverter* converter, const void* cppIn)
 {
     assert(cppIn);
-    return type->d->converter->copyToPython(cppIn);
+    return converter->copyToPython(cppIn);
+}
+PyObject* copyToPython(SbkObjectType* type, const void* cppIn)
+{
+    return CopyCppToPython(type->d->converter, cppIn);
+}
+PyObject* toPython(SbkConverter* converter, const void* cppIn)
+{
+    return CopyCppToPython(converter, cppIn);
 }
 
 PyObject* referenceToPython(SbkObjectType* type, const void* cppIn)
@@ -123,16 +136,24 @@ PythonToCppFunc isPythonToCppPointerConvertible(SbkObjectType* type, PyObject* p
     return type->d->converter->toCppPointerConversion.first(pyIn);
 }
 
-PythonToCppFunc isPythonToCppValueConvertible(SbkObjectType* type, PyObject* pyIn)
+static inline PythonToCppFunc IsPythonToCppConvertible(SbkConverter* converter, PyObject* pyIn)
 {
     assert(pyIn);
-    ToCppConversionList& convs = type->d->converter->toCppConversions;
+    ToCppConversionList& convs = converter->toCppConversions;
     for (ToCppConversionList::iterator conv = convs.begin(); conv != convs.end(); ++conv) {
         PythonToCppFunc toCppFunc = 0;
         if ((toCppFunc = (*conv).first(pyIn)))
             return toCppFunc;
     }
     return 0;
+}
+PythonToCppFunc isPythonToCppValueConvertible(SbkObjectType* type, PyObject* pyIn)
+{
+    return IsPythonToCppConvertible(type->d->converter, pyIn);
+}
+PythonToCppFunc isPythonToCppConvertible(SbkConverter* converter, PyObject* pyIn)
+{
+    return IsPythonToCppConvertible(converter, pyIn);
 }
 
 PythonToCppFunc isPythonToCppReferenceConvertible(SbkObjectType* type, PyObject* pyIn)
