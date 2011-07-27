@@ -10,7 +10,7 @@
             <native-to-target>
             return PyBool_FromLong(%in.value());
             </native-to-target>
-            <target-to-native replace='yes'>
+            <target-to-native>
                 <add-conversion type='PyBool' check='PyBool_Check(%in)'>
                 %out = %OUTTYPE(%in == Py_True);
                 </add-conversion>
@@ -18,15 +18,62 @@
         </conversion-rule>
     </primitive-type>
 
-    <!--
     <container-type name="std::list" type="list">
-        <conversion-rule file="list_conversions.h"/>
+        <!--<conversion-rule file="list_conversions.h"/>-->
         <include file-name="list" location="global"/>
+        <conversion-rule>
+            <type-check check='PySequence_Check(%in)'/>
+            <!--<type-check check='PySequence_Check(%in)'/>
+            /*
+            static inline bool checkType(PyObject* pyObj) {
+                return isConvertible(pyObj);
+            }
+            static inline bool isConvertible(PyObject* pyObj) {
+                if (PyObject_TypeCheck(pyObj, SbkType[StdList]()))
+                    return true;
+                // Sequence conversion are made ONLY for python sequences, not for
+                // binded types implementing sequence protocol, otherwise this will
+                // cause a mess like QBitArray being accepted by someone expecting a
+                // QStringList.
+                if ((SbkType[StdList]() AND Object::checkType(pyObj)) || !PySequence_Check(pyObj))
+                    return false;
+                for (int i = 0, max = PySequence_Length(pyObj); i &lt; max; ++i) {
+                    AutoDecRef item(PySequence_GetItem(pyObj, i));
+                    if (!Converter[typename StdList::value_type]::isConvertible(item))
+                        return false;
+                }
+                return true;
+            }
+            */
+            </type-check>-->
+            <native-to-target>
+            PyObject* %out = PyList_New((int)%in.size());
+            typename StdList::const_iterator it = %in.begin();
+            for (int idx = 0; it != %in.end(); ++it, ++idx) {
+                typename %INTYPE::value_type vh(*it);
+                PyList_SET_ITEM(%out, idx, %CONVERTTOPYTHON[%INTYPE_0](vh));
+                //Converter&lt;typename StdList::value_type>::toPython(vh));
+            }
+            return %out;
+            </native-to-target>
+            <target-to-native>
+                <add-conversion type='PySequence' check='PySequence_Check(%in)'>
+                //if (PyObject_TypeCheck(%in, %INTYPE_0])) {
+                //    %out = *((StdList*)Shiboken::Object::cppPointer((SbkObject*)%in, SbkType[StdList]));
+                //} else {
+                //    for (int i = 0; i &lt; PySequence_Size(%in); i++) {
+                //        AutoDecRef pyItem(PySequence_GetItem(%in, i));
+                //        result.push_back(Converter[typename StdList::value_type]::toCpp(pyItem));
+                //    }
+                //    %out = result;
+                //}
+                </add-conversion>
+            </target-to-native>
+        </conversion-rule>
     </container-type>
-    -->
 
     <object-type name="Obj"/>
     <value-type name="Val"/>
-    <!--<value-type name="ListUser"/>-->
+    <value-type name="ListUser"/>
     <value-type name="MinBoolUser"/>
 </typesystem>

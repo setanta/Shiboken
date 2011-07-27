@@ -25,7 +25,7 @@
             <native-to-target>
             %out = PyComplex_FromDoubles(%in.real(), %in.imag());
             </native-to-target>
-            <target-to-native replace='yes'>
+            <target-to-native>
                 <add-conversion type='PyComplex' check='PyComplex_Check(%in)'>
                 double real = PyComplex_RealAsDouble(%in);
                 double imag = PyComplex_ImagAsDouble(%in);
