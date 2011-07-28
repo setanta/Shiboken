@@ -446,6 +446,7 @@
         Py_INCREF(Py_None);
     </template>
 
+    <!--
     <object-type name="Modifications">
         <enum-type name="OverloadedModFunc"/>
 
@@ -465,11 +466,11 @@
                 <remove-argument/>
                 <replace-default-expression with="321"/>
             </modify-argument>
-            <!--
+            <!- -
             <modify-argument index="4">
                 <remove-default-expression/>
             </modify-argument>
-            -->
+            - ->
         </modify-function>
 
         <modify-function signature="argRemoval0(int, bool, int, int)">
@@ -584,29 +585,29 @@
             </inject-code>
         </modify-function>
 
-        <!--
+        <!- -
         this alteration will trigger an interesting
         compile time error on the binding
-        -->
-        <!--
+        - ->
+        <!- -
         <modify-function signature="overloaded(int, bool, Point, Point)">
             <modify-argument index="3">
                 <remove-argument/>
             </modify-argument>
         </modify-function>
-        -->
+        - ->
 
-        <!--
+        <!- -
         renaming this signature should remove it from the other
         overloaded methods decision tree
-        -->
+        - ->
         <modify-function signature="overloaded(int, bool, Point, Point)" rename="over"/>
 
-        <!--
+        <!- -
         'ok' must be removed and the return value will be changed
         to a tuple (PyObject*) containing the expected result plus
         the 'ok' value as a Python boolean
-        -->
+        - ->
         <modify-function signature="pointToPair(Point, bool*)">
             <modify-argument index="2">
                 <remove-argument/>
@@ -622,7 +623,7 @@
             </inject-code>
         </modify-function>
 
-        <!-- same as 'pointToPair' except that this time 'ok' is the first argument -->
+        <!- - same as 'pointToPair' except that this time 'ok' is the first argument - ->
         <modify-function signature="multiplyPointCoordsPlusValue(bool*, Point, double)">
             <modify-argument index="1">
                 <remove-argument/>
@@ -638,14 +639,14 @@
             </inject-code>
         </modify-function>
 
-        <!-- completely remove 'plus' from the Python side -->
+        <!- - completely remove 'plus' from the Python side - ->
         <modify-function signature="doublePlus(int, int)">
             <modify-argument index="2">
                 <remove-argument/>
             </modify-argument>
         </modify-function>
 
-        <!-- the default value for both arguments must be changed in Python -->
+        <!- - the default value for both arguments must be changed in Python - ->
         <modify-function signature="power(int, int)">
             <modify-argument index="1">
                 <replace-default-expression with="2"/>
@@ -655,29 +656,30 @@
             </modify-argument>
         </modify-function>
 
-        <!-- in Python set argument default value to 10 -->
+        <!- - in Python set argument default value to 10 - ->
         <modify-function signature="timesTen(int)">
             <modify-argument index="1">
                 <replace-default-expression with="10"/>
             </modify-argument>
         </modify-function>
 
-        <!-- in Python remove the argument default value -->
+        <!- - in Python remove the argument default value - ->
         <modify-function signature="increment(int)">
             <modify-argument index="1">
                 <remove-default-expression/>
             </modify-argument>
         </modify-function>
 
-        <!-- don't export this method to Python -->
+        <!- - don't export this method to Python - ->
         <modify-function signature="exclusiveCppStuff()" remove="all"/>
 
-        <!-- change the name of this regular method -->
+        <!- - change the name of this regular method - ->
         <modify-function signature="cppMultiply(int, int)" rename="calculateArea"/>
 
-        <!-- change the name of this virtual method -->
+        <!- - change the name of this virtual method - ->
         <modify-function signature="className()" rename="name"/>
     </object-type>
+    -->
 
     <object-type name="AbstractModifications">
         <!--
@@ -1004,7 +1006,8 @@
                 int *cppItems = new int[numItems];
                 for (int i = 0; i &lt; numItems; i++)
                     cppItems[i] = %CONVERTTOCPP[int](PySequence_GetItem(%PYARG_1, i));
-                %PYARG_0 = %CONVERTTOPYTHON[int](%CPPSELF.%FUNCTION_NAME(numItems, cppItems));
+                int tmp = %CPPSELF.%FUNCTION_NAME(numItems, cppItems);
+                %PYARG_0 = %CONVERTTOPYTHON[int](tmp);
                 delete[] cppItems;
             </inject-code>
         </modify-function>
@@ -1549,7 +1552,8 @@
     <object-type name="ObjectTypeOperators">
         <add-function signature="operator!=(std::string)" return-type="bool">
             <inject-code class="target">
-                %PYARG_0 = %CONVERTTOPYTHON[bool](%CPPSELF.key() != %1);
+                bool result = %CPPSELF.key() != %1;
+                %PYARG_0 = %CONVERTTOPYTHON[bool](result);
             </inject-code>
         </add-function>
     </object-type>
