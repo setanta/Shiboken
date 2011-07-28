@@ -4745,6 +4745,33 @@ void CppGenerator::finishGeneration()
                 writePythonToCppConversionFunctions(s, toNative, type);
         }
 
+        s << "// CONTAINER_TYPES ------------------------------" << endl;
+        foreach (const ContainerTypeEntry* type, containerTypes()) {
+            s << "// " << type->qualifiedCppName() << endl;
+            CustomConversion* conv = type->customConversion();
+            if (!conv)
+                continue;
+            s << "/* targetTypeCheckingExpression:" << endl << conv->targetTypeCheckingExpression() << endl;
+            s << "*/" << endl;
+            s << "/* nativeToTargetConversion    :" << endl << conv->nativeToTargetConversion() << endl;
+            s << "*/" << endl;
+            foreach (CustomConversion::TargetToNativeConversion* toNative, conv->targetToNativeConversions()) {
+                s << "/* toNative->sourceTypeName :" << endl << toNative->sourceTypeName() << endl;
+                s << "*/" << endl;
+                s << "/* toNative->sourceTypeCheck:" << endl << toNative->sourceTypeCheck() << endl;
+                s << "*/" << endl;
+                s << "/* toNative->conversion     :" << endl << toNative->conversion() << endl;
+                s << "*/" << endl;
+            }
+            s << endl;
+        }
+        s << endl;
+        s << "// INSTANTIATED_CONTAINER_TYPES ------------------------------" << endl;
+        foreach (const AbstractMetaType* type, instantiatedContainers()) {
+            s << "// " << type->cppSignature() << endl;
+        }
+        s << endl;
+
         s << endl;
         s << "static void initConverters()" << endl;
         s << '{' << endl;

@@ -42,6 +42,7 @@ ListUser::sumIntList(std::list<int> intList)
     return total;
 }
 
+/*
 std::list<MinBool>
 ListUser::createMinBoolList(MinBool mb1, MinBool mb2)
 {
@@ -77,7 +78,7 @@ ListUser::sumValList(std::list<Val> valList)
         total += iter->valId();
     return total;
 }
-
+*/
 std::list<Obj*>
 ListUser::createObjList(Obj* o1, Obj* o2)
 {
@@ -95,7 +96,7 @@ ListUser::sumObjList(std::list<Obj*> objList)
         total += (*iter)->objId();
     return total;
 }
-
+/*
 std::list<std::list<int> >
 ListUser::createListOfIntLists(int num)
 {
@@ -115,4 +116,4 @@ ListUser::sumListOfIntLists(std::list<std::list<int> > intListList)
     }
     return total;
 }
-
+*/

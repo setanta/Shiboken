@@ -38,17 +38,17 @@ class ExtListUser(ListUser):
     def sumIntList(self, intList):
         return sum(intList) * 2
 
-    def createMinBoolList(self, mb1, mb2):
-        return [not mb1, not mb2]
+    #def createMinBoolList(self, mb1, mb2):
+        #return [not mb1, not mb2]
 
-    def oredMinBoolList(self, minBoolList):
-        return not reduce(lambda a, b: a|b, minBoolList)
+    #def oredMinBoolList(self, minBoolList):
+        #return not reduce(lambda a, b: a|b, minBoolList)
 
-    def createValList(self, num):
-        return [Val(i) for i in range(0, num * 2, 2)]
+    #def createValList(self, num):
+        #return [Val(i) for i in range(0, num * 2, 2)]
 
-    def sumValList(self, valList):
-        return sum([val.valId() for val in valList]) * 2
+    #def sumValList(self, valList):
+        #return sum([val.valId() for val in valList]) * 2
 
     def createObjList(self, o1, o2):
         o1.setObjId(o1.objId() * 2)
@@ -58,11 +58,11 @@ class ExtListUser(ListUser):
     def sumObjList(self, objList):
         return sum([obj.objId() for obj in objList]) * 2
 
-    def createListOfIntLists(self, num):
-        return [self.createIntList(num)] * 4
+    #def createListOfIntLists(self, num):
+        #return [self.createIntList(num)] * 4
 
-    def sumListOfIntLists(self, intListList):
-        return sum([sum(line) for line in intListList]) * 2
+    #def sumListOfIntLists(self, intListList):
+        #return sum([sum(line) for line in intListList]) * 2
 
 
 class IntListConversionTest(unittest.TestCase):
@@ -111,7 +111,7 @@ class IntListConversionTest(unittest.TestCase):
         self.assertEqual(lu.sumIntList(lst), sum(lst) * 2)
         self.assertEqual(lu.callSumIntList(lst), sum(lst) * 2)
 
-
+'''
 class MinBoolListConversionTest(unittest.TestCase):
 
     def testCreateMinBoolList(self):
@@ -210,7 +210,7 @@ class ValListConversionTest(unittest.TestCase):
         lst = [Val(i) for i in range(4)]
         self.assertEqual(lu.sumValList(lst), sum([val.valId() for val in lst]) * 2)
         self.assertEqual(lu.callSumValList(lst), sum([val.valId() for val in lst]) * 2)
-
+'''
 
 class ObjListConversionTest(unittest.TestCase):
 
@@ -266,7 +266,7 @@ class ObjListConversionTest(unittest.TestCase):
         self.assertEqual(lu.sumObjList(lst), sum([obj.objId() for obj in lst]) * 2)
         self.assertEqual(lu.callSumObjList(lst), sum([obj.objId() for obj in lst]) * 2)
 
-
+'''
 class ListOfIntListConversionTest(unittest.TestCase):
 
     def testCreateListOfIntLists(self):
@@ -306,7 +306,7 @@ class ListOfIntListConversionTest(unittest.TestCase):
         lst = [range(4)] * 4
         self.assertEqual(lu.sumListOfIntLists(lst), sum([sum(line) for line in [range(4)] * 4]) * 2)
         self.assertEqual(lu.callSumListOfIntLists(lst), sum([sum(line) for line in [range(4)] * 4]) * 2)
-
+'''
 
 if __name__ == '__main__':
     unittest.main()
