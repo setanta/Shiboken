@@ -1057,6 +1057,10 @@ void CppGenerator::writeConverterFunctions(QTextStream& s, const AbstractMetaCla
                 continue;
             const AbstractMetaType* sourceType = conv->arguments().first()->type();
             typeCheck = cpythonCheckFunction(sourceType);
+            bool isUserPrimitiveWithoutTargetLangName = isUserPrimitive(sourceType)
+                                                        && sourceType->typeEntry()->targetLangApiName() == sourceType->typeEntry()->name();
+            if (!isWrapperType(sourceType) && !isUserPrimitiveWithoutTargetLangName && !sourceType->typeEntry()->isContainer())
+                typeCheck += '(';
             if (isWrapperType(sourceType)) {
                 typeCheck = QString("%1pyIn)").arg(typeCheck);
                 toCppConv = QString("%1%2")
@@ -1064,11 +1068,9 @@ void CppGenerator::writeConverterFunctions(QTextStream& s, const AbstractMetaCla
                             .arg(cpythonWrapperCPtr(sourceType->typeEntry(), "pyIn"));
             } else if (typeCheck.contains("%in")) {
                 typeCheck.replace("%in", "pyIn");
-                typeCheck = QString("(%1)").arg(typeCheck);
+                typeCheck = QString("%1)").arg(typeCheck);
             } else {
-                typeCheck = QString("%1%2pyIn)")
-                               .arg(typeCheck)
-                               .arg(sourceType->typeEntry()->isContainer() ? "" : "(");
+                typeCheck = QString("%1pyIn)").arg(typeCheck);
             }
             //QTextStream pc(&toCppPreConv);
             //pc << INDENT << getFullTypeNameWithoutModifiers(sourceType) << " cppIn";
@@ -1831,18 +1833,49 @@ void CppGenerator::writeTypeCheck(QTextStream& s, const AbstractMetaType* argTyp
     s << typeCheck;
 }
 
+static void checkTypeViability(const AbstractMetaFunction* func, const AbstractMetaType* type, int argIdx)
+{
+    if (!type
+        || !type->typeEntry()->isPrimitive()
+        || type->indirections() == 0
+        || ShibokenGenerator::isCString(type)
+        || func->argumentRemoved(argIdx)
+        || !func->typeReplaced(argIdx).isEmpty()
+        || !func->conversionRule(TypeSystem::All, argIdx).isEmpty())
+        return;
+    QString prefix;
+    if (func->ownerClass())
+        prefix = QString("%1::").arg(func->ownerClass()->qualifiedCppName());
+    qFatal(qPrintable(QString("There's no user provided way (conversion rule, argument removal, custom code, etc) "\
+                              "to handle the primitive %1 type '%2' in function '%3%4'.")
+                         .arg(argIdx == 0 ? "return" : "argument")
+                         .arg(type->cppSignature())
+                         .arg(prefix)
+                         .arg(func->signature())), NULL);
+}
+
+static void checkTypeViability(const AbstractMetaFunction* func)
+{
+    if (func->isUserAdded())
+        return;
+    const AbstractMetaType* type = func->type();
+    checkTypeViability(func, type, 0);
+    for (int i = 0; i < func->arguments().count(); ++i)
+        checkTypeViability(func, func->arguments().at(i)->type(), i + 1);
+}
+
 void CppGenerator::writeTypeCheck(QTextStream& s, const OverloadData* overloadData, QString argumentName)
 {
     QSet<const TypeEntry*> numericTypes;
 
     foreach (OverloadData* od, overloadData->previousOverloadData()->nextOverloadData()) {
         foreach (const AbstractMetaFunction* func, od->overloads()) {
-            const AbstractMetaArgument* arg = od->argument(func);
-
-            if (!arg->type()->isPrimitive())
+            checkTypeViability(func);
+            const AbstractMetaType* argType = od->argument(func)->type();
+            if (!argType->isPrimitive())
                 continue;
-            if (ShibokenGenerator::isNumber(arg->type()->typeEntry()))
-                numericTypes << arg->type()->typeEntry();
+            if (ShibokenGenerator::isNumber(argType->typeEntry()))
+                numericTypes << argType->typeEntry();
         }
     }
 
@@ -2609,7 +2642,7 @@ void CppGenerator::writeNamedArgumentResolution(QTextStream& s, const AbstractMe
                 Indentation indent(INDENT);
                 s << INDENT << pyArgName << " = value;" << endl;
                 s << INDENT << "if (!";
-                writeTypeCheck(s, arg->type(), pyArgName, isNumber(arg->type()->typeEntry()));
+                writeTypeCheck(s, arg->type(), pyArgName, isNumber(arg->type()->typeEntry()), func->typeReplaced(arg->argumentIndex() + 1));
                 s << ')' << endl;
                 {
                     Indentation indent(INDENT);
