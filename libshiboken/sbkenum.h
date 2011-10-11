@@ -32,6 +32,7 @@ extern "C"
 extern LIBSHIBOKEN_API PyTypeObject SbkEnumType_Type;
 struct SbkObjectType;
 
+struct SbkConverter;
 struct SbkEnumTypePrivate;
 struct LIBSHIBOKEN_API SbkEnumType
 {
@@ -95,6 +96,11 @@ namespace Enum
 
     LIBSHIBOKEN_API long getValue(PyObject* enumItem);
     LIBSHIBOKEN_API PyObject* getEnumItemFromValue(PyTypeObject* enumType, long itemValue);
+
+    /// Sets the enum's type converter.
+    LIBSHIBOKEN_API void setTypeConverter(SbkEnumType* enumType, SbkConverter* converter);
+    /// Returns the converter assigned to the enum \p type.
+    LIBSHIBOKEN_API SbkConverter* getTypeConverter(SbkEnumType* enumType);
 }
 
 } // namespace Shiboken

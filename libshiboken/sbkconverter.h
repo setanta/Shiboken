@@ -41,6 +41,8 @@
 extern "C"
 {
 
+struct SbkEnumType;
+
 /**
  *  SbkConverter is used to perform type conversions from C++
  *  to Python and vice-versa;.and it is also used for type checking.
@@ -154,6 +156,7 @@ LIBSHIBOKEN_API PyObject* referenceToPython(SbkObjectType* type, const void* cpp
  *      PyObject* pyVar = copyToPython(SBKTYPE, &var);
  */
 LIBSHIBOKEN_API PyObject* copyToPython(SbkObjectType* type, const void* cppIn);
+LIBSHIBOKEN_API PyObject* copyToPython(SbkEnumType* type, const void* cppIn);
 LIBSHIBOKEN_API PyObject* copyToPython(SbkConverter* converter, const void* cppIn);
 
 // Python -> C++ ---------------------------------------------------------------------------
@@ -183,6 +186,9 @@ LIBSHIBOKEN_API PythonToCppFunc isPythonToCppReferenceConvertible(SbkObjectType*
 /// This is the same as isPythonToCppValueConvertible function.
 LIBSHIBOKEN_API PythonToCppFunc isPythonToCppConvertible(SbkConverter* converter, PyObject* pyIn);
 
+/// Overload for Shiboken Enum types.
+LIBSHIBOKEN_API PythonToCppFunc isPythonToCppConvertible(SbkEnumType* type, PyObject* pyIn);
+
 /**
  *  Returns the C++ pointer for the \p pyIn object cast to the type passed via \p desiredType.
  *  It differs from Shiboken::Object::cppPointer because it casts the pointer to a proper
@@ -195,6 +201,9 @@ LIBSHIBOKEN_API void pythonToCppPointer(SbkObjectType* type, PyObject* pyIn, voi
 
 /// Converts a Python object \p pyIn to C++ and copies the result in the C++ variable passed in \p cppOut.
 LIBSHIBOKEN_API void pythonToCppCopy(SbkObjectType* type, PyObject* pyIn, void* cppOut);
+
+/// Converts a Python enum \p pyIn to C++ with result stored in the variable passed in \p cppOut.
+LIBSHIBOKEN_API void pythonToCpp(SbkEnumType* type, PyObject* pyIn, void* cppOut);
 
 /// Converts a Python object \p pyIn to C++, copying the result in the C++ variable passed in \p cppOut.
 LIBSHIBOKEN_API void pythonToCpp(SbkConverter* converter, PyObject* pyIn, void* cppOut);

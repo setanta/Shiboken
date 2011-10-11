@@ -51,6 +51,7 @@ private:
     void writeMetaObjectMethod(QTextStream& s, const AbstractMetaClass* metaClass);
     void writeMetaCast(QTextStream& s, const AbstractMetaClass* metaClass);
 
+    void writeEnumConverterFunctions(QTextStream& s, const AbstractMetaEnum* metaEnum);
     void writeConverterFunctions(QTextStream& s, const AbstractMetaClass* metaClass);
     void writeCustomConverterFunctions(QTextStream& s, const CustomConversion* customConversion);
     void writeConverterRegister(QTextStream& s, const AbstractMetaClass* metaClass);
@@ -250,6 +251,8 @@ private:
     void writeSpecialCastFunction(QTextStream& s, const AbstractMetaClass* metaClass);
 
     void writePrimitiveConverterInitialization(QTextStream& s, const CustomConversion* customConversion);
+    void writeEnumConverterInitialization(QTextStream& s, const AbstractMetaEnum* metaEnum);
+    void writeFlagsConverterInitialization(QTextStream& s, const FlagsTypeEntry* flagsType);
     void writeContainerConverterInitialization(QTextStream& s, const AbstractMetaType* type);
     void writeExtendedConverterInitialization(QTextStream& s, const TypeEntry* externalType, const QList<const AbstractMetaClass*>& conversions);
 

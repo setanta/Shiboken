@@ -523,8 +523,12 @@ PyTypeObject* newType(const char* name)
 
 PyTypeObject* newTypeWithName(const char* name, const char* cppName)
 {
-    PyTypeObject* type = new PyTypeObject;
-    ::memset(type, 0, sizeof(PyTypeObject));
+    SbkEnumType* enumType = new SbkEnumType;
+    ::memset(enumType, 0, sizeof(SbkEnumType));
+    enumType->d = new SbkEnumTypePrivate;
+    memset(enumType->d, 0, sizeof(SbkEnumTypePrivate));
+
+    PyTypeObject* type = (PyTypeObject*)enumType;
     Py_TYPE(type) = &SbkEnumType_Type;
     type->tp_basicsize = sizeof(SbkEnumObject);
     type->tp_print = &SbkEnumObject_print;
@@ -549,6 +553,16 @@ const char* getCppName(PyTypeObject* enumType)
 long int getValue(PyObject* enumItem)
 {
     return reinterpret_cast<SbkEnumObject*>(enumItem)->ob_value;
+}
+
+void setTypeConverter(SbkEnumType* enumType, SbkConverter* converter)
+{
+    enumType->d->converter = converter;
+}
+
+SbkConverter* getTypeConverter(SbkEnumType* enumType)
+{
+    return enumType->d->converter;
 }
 
 } // namespace Enum

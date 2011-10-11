@@ -23,6 +23,8 @@
 #include "sbkconverter.h"
 #include "sbkconverter_p.h"
 #include "basewrapper_p.h"
+#include "sbkenum.h"
+#include "sbkenum_p.h"
 #include "google/dense_hash_map"
 #include "autodecref.h"
 #include "sbkdbg.h"
@@ -172,6 +174,10 @@ PyObject* copyToPython(SbkObjectType* type, const void* cppIn)
 {
     return CopyCppToPython(type->d->converter, cppIn);
 }
+PyObject* copyToPython(SbkEnumType* type, const void* cppIn)
+{
+    return CopyCppToPython(type->d->converter, cppIn);
+}
 PyObject* copyToPython(SbkConverter* converter, const void* cppIn)
 {
     return CopyCppToPython(converter, cppIn);
@@ -201,6 +207,11 @@ PythonToCppFunc isPythonToCppValueConvertible(SbkObjectType* type, PyObject* pyI
 PythonToCppFunc isPythonToCppConvertible(SbkConverter* converter, PyObject* pyIn)
 {
     return IsPythonToCppConvertible(converter, pyIn);
+}
+
+PythonToCppFunc isPythonToCppConvertible(SbkEnumType* type, PyObject* pyIn)
+{
+    return IsPythonToCppConvertible(type->d->converter, pyIn);
 }
 
 PythonToCppFunc isPythonToCppReferenceConvertible(SbkObjectType* type, PyObject* pyIn)
@@ -247,6 +258,12 @@ static void _pythonToCppCopy(SbkConverter* converter, PyObject* pyIn, void* cppO
 }
 
 void pythonToCppCopy(SbkObjectType* type, PyObject* pyIn, void* cppOut)
+{
+    assert(type);
+    _pythonToCppCopy(type->d->converter, pyIn, cppOut);
+}
+
+void pythonToCpp(SbkEnumType* type, PyObject* pyIn, void* cppOut)
 {
     assert(type);
     _pythonToCppCopy(type->d->converter, pyIn, cppOut);
