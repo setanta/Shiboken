@@ -64,8 +64,10 @@ private:
     int m_value;
 };
 
+#if defined _WIN32 || defined __CYGWIN__
 template class LIBSAMPLE_API TemplateBase<IdentityType>;
 template class LIBSAMPLE_API TemplateBase<DuplicatorType>;
+#endif
 
 typedef TemplateBase<IdentityType> ValueIdentity;
 typedef TemplateBase<DuplicatorType> ValueDuplicator;
