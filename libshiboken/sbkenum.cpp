@@ -22,6 +22,8 @@
 
 #include "sbkenum.h"
 #include "sbkstring.h"
+#include "sbkenum_p.h"
+#include "sbkconverter.h"
 #include "basewrapper.h"
 #include "sbkdbg.h"
 #include "autodecref.h"
@@ -293,12 +295,15 @@ static PyNumberMethods enum_as_number = {
      /* nb_index */                 enum_int
 };
 
+static void SbkEnumTypeDealloc(PyObject* pyObj);
+static PyObject* SbkEnumTypeTpNew(PyTypeObject* metatype, PyObject* args, PyObject* kwds);
+
 PyTypeObject SbkEnumType_Type = {
     PyVarObject_HEAD_INIT(0, 0)
     /*tp_name*/             "Shiboken.EnumType",
-    /*tp_basicsize*/        sizeof(PyTypeObject),
+    /*tp_basicsize*/        sizeof(SbkEnumType),
     /*tp_itemsize*/         0,
-    /*tp_dealloc*/          0,
+    /*tp_dealloc*/          SbkEnumTypeDealloc,
     /*tp_print*/            0,
     /*tp_getattr*/          0,
     /*tp_setattr*/          0,
@@ -330,9 +335,9 @@ PyTypeObject SbkEnumType_Type = {
     /*tp_descr_set*/        0,
     /*tp_dictoffset*/       0,
     /*tp_init*/             0,
-    /*tp_alloc*/            0,
-    /*tp_new*/              PyType_GenericNew,
-    /*tp_free*/             0,
+    /*tp_alloc*/            PyType_GenericAlloc,
+    /*tp_new*/              SbkEnumTypeTpNew,
+    /*tp_free*/             PyObject_GC_Del,
     /*tp_is_gc*/            0,
     /*tp_bases*/            0,
     /*tp_mro*/              0,
@@ -340,6 +345,30 @@ PyTypeObject SbkEnumType_Type = {
     /*tp_subclasses*/       0,
     /*tp_weaklist*/         0
 };
+
+void SbkEnumTypeDealloc(PyObject* pyObj)
+{
+    SbkEnumType* sbkType = reinterpret_cast<SbkEnumType*>(pyObj);
+
+    PyObject_GC_UnTrack(pyObj);
+    Py_TRASHCAN_SAFE_BEGIN(pyObj);
+    if (sbkType->d) {
+        Shiboken::Conversions::deleteConverter(sbkType->d->converter);
+        delete sbkType->d;
+        sbkType->d = 0;
+    }
+    Py_TRASHCAN_SAFE_END(pyObj);
+}
+
+PyObject* SbkEnumTypeTpNew(PyTypeObject* metatype, PyObject* args, PyObject* kwds)
+{
+    SbkEnumType* newType = reinterpret_cast<SbkEnumType*>(PyType_Type.tp_new(metatype, args, kwds));
+    if (!newType)
+        return 0;
+    newType->d = new SbkEnumTypePrivate;
+    memset(newType->d, 0, sizeof(SbkEnumTypePrivate));
+    return reinterpret_cast<PyObject*>(newType);
+}
 
 } // extern "C"
 
